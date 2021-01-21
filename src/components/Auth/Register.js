@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Form, Segment, Button, Header, Message, Icon } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import firebase from '../../firebase';
+import md5 from 'md5';
 
 class Register extends React.Component {
     state = {
@@ -10,7 +11,8 @@ class Register extends React.Component {
         password: "",
         passwordConfirmation: "",
         errors: [],
-        loading: false
+        loading: false,
+        userRef: firebase.database().ref('users')
     };
     
     isFormValid = () => {
@@ -63,8 +65,22 @@ class Register extends React.Component {
             .auth()
             .createUserWithEmailAndPassword(this.state.email, this.state.password)
             .then(createdUser => {
-                // console.log(createdUser);
-                this.setState({ loading: false });
+                console.log(createdUser, "check createdUser");
+                createdUser.user.updateProfile({
+                    displayName: this.state.username,
+                    photoURL: `https://gravatar.com/avatar/${md5(createdUser.user.email)}?d=identicon`
+                })
+                .then(() => {
+                    // this.setState({ loading: false })
+                    this.saveUser(createdUser).then(() => {
+                        console.log('save user');
+                    })
+                })
+                .catch(err => {
+                  console.error(err);
+                  this.setState({ errors: this.state.errors.concat(err), loading: false });
+                })
+                // this.setState({ loading: false });
             })
             .catch(err => {
                 // console.error(err);
@@ -75,6 +91,13 @@ class Register extends React.Component {
 
     handleInputError = (errors, inputName) => {
         return errors.some(error => error.message.toLowerCase().includes(inputName)) ? "error" : ""
+    }
+
+    saveUser = createdUser => {
+        return this.state.userRef.child(createdUser.user.uid).set({
+            name: createdUser.user.displayName,
+            avatar: createdUser.user.photoURL
+        });
     }
     
     render() {
