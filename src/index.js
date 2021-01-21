@@ -5,7 +5,8 @@ import App from './components/App';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import 'semantic-ui-css/semantic.min.css';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route, withRouter } from 'react-router-dom';
+import  firebase from './firebase';
 
 // import reducers from './reducers';
 // import { createStore, applyMiddleware, compose } from 'redux';
@@ -16,14 +17,30 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 //   composeEnhancers(applyMiddleware)
 // );
 
-const Root = () => (
-  <Router>
-    <Switch>
-      <Route exact path='/' component={App} />
-      <Route path='/login' component={Login} />
-      <Route path='/register' component={Register} />
-    </Switch>
-  </Router>
-);
+class Root extends React.Component {
+  componentDidMount() {
+    firebase.auth().onAuthStateChanged(user => {
+      if(user) {
+        this.props.history.push('/');
+      }
+    });
+  }
+  render(){
+    return (
+        <Switch>
+          <Route exact path='/' component={App} />
+          <Route path='/login' component={Login} />
+          <Route path='/register' component={Register} />
+        </Switch>
+    );
+  }
+}
 
-ReactDOM.render(<Root />, document.getElementById('root'));
+const RootWithAuth = withRouter(Root);
+
+ReactDOM.render(
+  <Router>
+    <RootWithAuth />
+  </Router>,
+  document.getElementById('root')
+ );
