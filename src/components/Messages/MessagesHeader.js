@@ -7,10 +7,10 @@ class MessagesHeader extends React.Component {
             <Segment clearing>
                 {/* Channel Title */}
                 <Header fluid="true" as="h2" floated="left" style={{ marginBottom: 0 }}>
-                    <spna>
+                    <span>
                     Channel
                     <Icon name={"star outline"} color="black" />
-                    </spna>
+                    </span>
                     <Header.Subheader>2 Users</Header.Subheader>
                 </Header>
 
